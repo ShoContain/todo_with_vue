@@ -10,8 +10,11 @@
                v-else="editing" @blur="updateTodo" @keyup.enter="updateTodo"
                v-focus @keyup.esc="cancelTodo">
       </div>
-      <div class="remove-item" @click="removeTodo(index)">
-        &times;
+      <div>
+        <button @click="pluralize">ON</button>
+        <span class="remove-item" @click="removeTodo(index)">
+          &times;
+        </span>
       </div>
     </div>
 </template>
@@ -41,6 +44,12 @@
             'finished':this.todo.finished,
             'editing':this.todo.editing,
           }
+      },
+      created() {
+          eventBus.$on('pluralize',this.handlePluralize)
+      },
+      beforeDestroy() {
+        eventBus.$off('pluralize',this.handlePluralize)
       },
       directives:{
         focus:{
@@ -80,6 +89,21 @@
           cancelTodo(){
           this.title=this.beforeEditCache;
           this.editing=false;
+        },
+        pluralize(){
+            eventBus.$emit('pluralize')
+        },
+        handlePluralize(){
+          this.title = this.title+'です';
+          eventBus.$emit('finishUpdate',{
+            'index':this.index,
+            'todo': {
+              'id':this.id,
+              'title': this.title,
+              'finished':this.finished,
+              'editing':this.editing,
+            }
+          })
         },
       }
     }
