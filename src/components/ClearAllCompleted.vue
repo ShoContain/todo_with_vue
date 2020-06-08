@@ -5,15 +5,14 @@
 <script>
     export default {
         name: "ClearAllCompleted",
-        props:{
-          showClearAllCompletedButton:{
-            type:Boolean,
-            required:true,
+        computed:{
+          showClearAllCompletedButton(){
+            return this.$store.getters.showClearAllCompletedButton
           }
         },
-      methods:{
+        methods:{
         clearAllCompleted(){
-          eventBus.$emit('clearAllCompleted')
+          this.$store.dispatch('clearCompleted')
         }
       }
     }

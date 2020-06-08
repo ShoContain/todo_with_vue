@@ -12,7 +12,7 @@
       </div>
       <div>
         <button @click="pluralize">ON</button>
-        <span class="remove-item" @click="removeTodo(index)">
+        <span class="remove-item" @click="removeTodo(todo.id)">
           &times;
         </span>
       </div>
@@ -25,11 +25,8 @@
         props:{
           todo:{
             type:Object,
+            type:Object,
             required:true,
-          },
-          index:{
-            type: Number,
-            required: true,
           },
           checkAll:{
             type:Boolean,
@@ -64,8 +61,8 @@
           },
       },
       methods:{
-          removeTodo(index){
-            eventBus.$emit('removeTodo',index);
+          removeTodo(id){
+            this.$store.dispatch('deleteTodo',id)
           },
           editTodo(){
           this.beforeEditCache=this.title;
@@ -76,14 +73,11 @@
             this.title = this.beforeEditCache;
           }
           this.editing=false;
-          eventBus.$emit('finishUpdate',{
-            'index':this.index,
-            'todo': {
-              'id':this.id,
-              'title': this.title,
-              'finished':this.finished,
-              'editing':this.editing,
-            }
+          this.$store.dispatch('updateTodo',{
+            'id':this.id,
+            'title': this.title,
+            'finished':this.finished,
+            'editing':this.editing,
           });
         },
           cancelTodo(){
@@ -95,14 +89,12 @@
         },
         handlePluralize(){
           this.title = this.title+'です';
-          eventBus.$emit('finishUpdate',{
-            'index':this.index,
-            'todo': {
-              'id':this.id,
-              'title': this.title,
-              'finished':this.finished,
-              'editing':this.editing,
-            }
+          const index = this.$store.state.toDos.findIndex(item=>item.id === this.id)
+          this.$store.state.toDos.splice(index,1,{
+            'id':this.id,
+            'title': this.title,
+            'finished':this.finished,
+            'editing':this.editing,
           })
         },
       }

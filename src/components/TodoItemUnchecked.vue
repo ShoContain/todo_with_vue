@@ -6,14 +6,12 @@
 <script>
     export default {
         name: "TodoItemUnchecked",
-        props:{
-          uncheckedNum: {
-            type:Number,
-            required:true,
+        computed:{
+          uncheckedNum(){
+            return this.$store.getters.uncheckedNum
           },
-          uncheckedLeft:{
-            type: Boolean,
-            required: true,
+          uncheckedLeft(){
+            return this.$store.getters.uncheckedLeft
           }
         }
     }

@@ -7,20 +7,19 @@
 </template>
 
 <script>
-    export default {
-        name: "FilterButton",
-        data(){
-          return{
-            'filter':'all',
-          }
-        },
-        methods:{
-          changeFilter(filter){
-            this.fillter=filter
-            eventBus.$emit('toDosWithFilter',filter)
-          }
-        },
-    }
+  export default {
+    name: "FilterButton",
+    computed: {
+      filter() {
+        return this.$store.state.filter
+      },
+    },
+    methods: {
+      changeFilter(filter) {
+        this.$store.dispatch('changeFilter',filter)
+      },
+    },
+  }
 </script>
 
 <style scoped>

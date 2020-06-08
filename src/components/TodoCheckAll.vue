@@ -1,6 +1,7 @@
 <template>
   <div>
-    <label><input @change="ckeckAllTodos" type="checkbox" :checked="!uncheckedLeft">
+    <label>
+      <input @change="ckeckAllTodos" type="checkbox" :checked="!uncheckedLeft">
       <span v-if="uncheckedLeft">全てチェック</span>
       <span v-else>チェックを外す</span>
     </label>
@@ -9,16 +10,15 @@
 
 <script>
     export default {
-        name: "TodoCheckAll",
-        props:{
-          uncheckedLeft: {
-            type:Boolean,
-            required:true,
-          },
-        },
+      name: "TodoCheckAll",
+      computed:{
+        uncheckedLeft(){
+          return this.$store.getters.uncheckedLeft
+        }
+      },
       methods:{
         ckeckAllTodos(){
-            eventBus.$emit('checkAllTodos');
+          this.$store.dispatch('checkAllTodos',event.target.checked);
           },
       }
     }
