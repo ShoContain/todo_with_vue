@@ -1,14 +1,13 @@
 import Vue from 'vue'
 import Vuex from 'vuex'
-import axios from 'axios'
+import db from '../firebase'
 
 Vue.use(Vuex)
-// ベースURL
-axios.defaults.baseURL = 'http://127.0.0.1:8000/api';
 export const store = new Vuex.Store({
   state: {
     filter: "all",
     toDos: [],
+    loading:true,
   },
     getters:{
       uncheckedNum(state){
@@ -75,81 +74,100 @@ export const store = new Vuex.Store({
 
     // 追加
     addTodo(context, todo) {
-      axios.post('/todos',{
+      db.collection('todos').add({
+        //IDはFireBaseで自動的に付与される
         title:todo.title,
         finished:false,
+        created_at:new Date(),
       })
-        .then(response=>{
-          context.commit('addTodo',response.data)
+        .then(docRef=>{
+          context.commit('addTodo',{
+            id:docRef.id,
+            title:todo.title,
+            finished:false,
+          })
         })
         .catch(error => {
-          console.log(error())
+          console.log(error)
         })
     },
+    //チェック済みリスト全削除
     clearCompleted(context) {
-      // チェック済みの配列を定義
-      const finished = store.state.toDos
-        .filter(todo=>todo.finished)
-        .map(todo=>todo.id)
-
-      axios.delete('/clearCompleted',{
-        //deleteリクエストではデータオブジェクトを渡す
-        data:{
-          todos:finished,
-        }
-      })
-        .then(response=>{
-          context.commit('clearCompleted')
-        })
-        .catch(error => {
-          console.log(error())
+      db.collection('todos')
+        .where('finished', '==', true).get()
+        .then(querySnapshot => {
+          querySnapshot.forEach(doc => {
+            doc.ref.delete()
+              .then(() => {
+                context.commit('clearCompleted')
+              })
+          })
         })
       },
     changeFilter(context, filter) {
       context.commit('changeFilter',filter)
     },
     //全てにチェックをいれる
-    checkAllTodos(context,checked) {
-      axios.patch('/checkAllTodo',{
-        finished:checked
-      })
-        .then(response=>{
-          context.commit('checkAllTodos',checked)
+    checkAllTodos(context,checked){
+     db.collection('todos').get()
+       .then(querySnapshot=>{
+        querySnapshot.forEach(doc=>{
+          doc.ref.update({
+            finished:checked,
+          })
+          .then(()=>{
+            context.commit('checkAllTodos',checked)
+          })
         })
-        .catch(error => {
-          console.log(error())
-        })
+       })
     },
     //削除
     deleteTodo(context, id) {
-      axios.delete('/todos/'+id)
-        .then(response=>{
+      db.collection('todos').doc(id).delete()
+        .then(()=>{
           context.commit('deleteTodo',id)
-        })
-        .catch(error => {
-          console.log(error())
         })
     },
     //更新
     updateTodo(context,todo) {
-      axios.patch('/todos/'+todo.id,{
+      db.collection('todos').doc(todo.id).set({
+        id:todo.id,
         title:todo.title,
         finished:todo.finished,
+        created_at:new Date(),
       })
-        .then(response=>{
-          context.commit('updateTodo',response.data)
+        .then(()=>{
+          context.commit('updateTodo',todo)
         })
         .catch(error => {
-          console.log(error())
+          console.log(error)
         })
     },
     retrieveTodos(context){
-      axios.get('/todos')
-        .then(response=>{
-          context.commit('retrieveTodos',response.data)
+      context.state.loading = true
+      db.collection('todos').get()
+        .then(querySnapshot=>{
+          let array = []
+          querySnapshot.forEach(doc=>{
+            const data = {
+              id:doc.id,
+              title:doc.data().title,
+              finished:doc.data().finished,
+              created_at:doc.data().created_at,
+            }
+            //新しい配列にプッシュ
+            array.push(data);
+          })
+          //firebaseではIDが付与されるが表示順は保証されないのでcreated_atをソートする
+          const arraySorted = array.sort((a,b)=>{
+            return a.created_at.seconds - b.created_at.seconds;
+          })
+          context.state.loading = false
+          //配列をコミットして渡す
+          context.commit('retrieveTodos',arraySorted)
         })
         .catch(error => {
-          console.log(error())
+          console.log(error)
         })
     },
   }

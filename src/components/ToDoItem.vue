@@ -89,14 +89,13 @@
         },
         handlePluralize(){
           this.title = this.title+'です';
-          const index = this.$store.state.toDos.findIndex(item=>item.id === this.id)
-          this.$store.state.toDos.splice(index,1,{
+          this.$store.dispatch('updateTodo',{
             'id':this.id,
-            'title': this.title,
+            'title':this.title,
             'finished':this.finished,
-            'editing':this.editing,
+            'editing':this.editing
           })
-        },
+        }
       }
     }
 </script>

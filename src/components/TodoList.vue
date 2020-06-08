@@ -3,6 +3,7 @@
     <input v-model="newTodo" type="text" class="todo-input"
            placeholder="何をリストに加えますか？"
            @keyup.enter="addTodo">
+    <div class="lds-dual-ring" v-if="$store.state.loading"></div>
     <transition-group name="fade" enter-active-class="animate__fadeInUp" leave-active-class="animate__fadeOutDown">
     <to-do-item v-for="todo in toDosWithFilter" :key="todo.id" class="todo-item" :checkAll="!uncheckedLeft"
                 :todo="todo"/>
@@ -161,5 +162,32 @@
   }
   .fade-enter, .fade-leave-to{
     opacity: 0;
+  }
+
+  /*スピナー*/
+  .lds-dual-ring {
+    display: inline-block;
+    width: 80px;
+    height: 80px;
+    margin-top: 20px;
+  }
+  .lds-dual-ring:after {
+    content: " ";
+    display: block;
+    width: 32px;
+    height: 32px;
+    margin: 8px;
+    border-radius: 50%;
+    border: 6px solid #90b664;
+    border-color: #90b664 transparent #90b664 transparent;
+    animation: lds-dual-ring 1.2s linear infinite;
+  }
+  @keyframes lds-dual-ring {
+    0% {
+      transform: rotate(0deg);
+    }
+    100% {
+      transform: rotate(360deg);
+    }
   }
 </style>
